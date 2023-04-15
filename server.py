@@ -130,7 +130,18 @@ print("Server started")
 print("Waiting for client request..")
 
 while True:
+    # enables the server to accept connections
     server.listen(1)
-    clientsock, clientAddress = server.accept()
-    newthread = ClientThread(clientAddress, clientsock)
-    newthread.start()
+
+    # accepts an incoming connection.
+    # socket must be bound (socket.bind())
+    # returns (conn, address), where conn is the new socket object
+    # (just like server's socket object but for the client)
+    # and address of the bound socket on the other side (the client)
+    new_client_socket, new_client_address = server.accept()
+
+    # creates a new thread object in the MAIN thread
+    new_thread = ClientThread(new_client_socket, new_client_address)
+
+    # calls ClientThread.run() in a new thread
+    new_thread.start()
