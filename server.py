@@ -47,8 +47,44 @@ class ClientThread(threading.Thread):
         print("New connection added: ", client_address)
 
     def run(self):
-        msg = ''
-        print("Connection from : ", clientAddress)
+        print("Connected to : ", self.client_address)
+
+        # client is waiting for game status after this call
+        if self.introduction():
+            users[self.name] = new_user()
+        else:
+            return
+
+        print(f"word: {word}")
+
+        # game loop
+        self.game_loop()
+
+        self.client_socket.close()
+        del users[self.name]
+        print(f"Client,{self.name}, at {self.client_address} disconnected...")
+
+    def msg_client(self, msg):
+        self.client_socket.sendall(bytes(msg, 'utf-8'))
+
+    def recv_client(self):
+        res = self.client_socket.recv(1024)
+        return res.decode()
+
+    def introduction(self):
+        intro = self.recv_client()
+        print(self.client_address + intro)
+
+        if intro == "NC":
+            self.msg_client(f"SC,{self.name}")
+
+            return True
+        else:
+            self.msg_client("EC,send 'I'm new'")
+            self.client_socket.close()
+            return False
+
+    def game_loop(self):
         while True:
             data = self.csocket.recv(2048)
             rand_word = sample(x, 1)[0]
