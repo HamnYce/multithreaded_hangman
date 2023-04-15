@@ -86,19 +86,36 @@ class ClientThread(threading.Thread):
 
     def game_loop(self):
         while True:
-            data = self.csocket.recv(2048)
-            rand_word = sample(x, 1)[0]
+            self.msg_client(game_status(users[self.name]))
 
-            msg = data.decode()
+            letter = self.recv_client().lower()
 
-            if msg == 'bye' or not msg:
-                break
+            if letter == 'exit':
+                self.msg_client("GO")
+                return
 
-            print("from client", msg)
-            self.csocket.send(bytes(rand_word, 'utf-8'))
-            # self.csocket.send(bytes(msg, 'UTF-8'))
+            if len(letter) != 1 or ord(letter) < ord('a') or ord(letter) > ord('z'):
+                self.msg_client("EG")
 
-        print("Client at ", clientAddress, " disconnected...")
+            if letter in users[self.name]['correct'] or letter in users[self.name]['wrong']:
+                self.msg_client("AG")
+            elif letter in word:
+                users[self.name]['correct'].add(letter)
+
+                if users[self.name]['correct'] == word_set:
+                    self.msg_client("GW")
+                    return
+
+                self.msg_client("CG")
+            else:
+                if users[self.name]['lives'] == 1:
+                    self.msg_client(f"GW,{word}")
+                    return
+
+                self.msg_client("IG")
+
+                users[self.name]['wrong'].add(letter)
+                users[self.name]['lives'] -= 1
 
 
 HOST = "0.0.0.0"
