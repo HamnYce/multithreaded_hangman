@@ -38,12 +38,13 @@ def game_status(user):
 
 class ClientThread(threading.Thread):
 
-    def __init__(self, clientAddress, clientsocket):
+    def __init__(self, client_socket, client_address):
         threading.Thread.__init__(self)
-        cur_thread = threading.current_thread()
-        print("current thread: {}".format(cur_thread))
-        self.csocket = clientsocket
-        print("New connection added: ", clientAddress)
+        self.client_socket = client_socket
+        self.client_address = client_address
+        self.name = sample(words, 1)[0] + str(randint(1, 100))
+
+        print("New connection added: ", client_address)
 
     def run(self):
         msg = ''
