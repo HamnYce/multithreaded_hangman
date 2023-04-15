@@ -31,10 +31,11 @@ def new_user():
     return {'correct': set(), 'wrong': set(), 'lives': 10}
 
 
-global x
+def game_status(user):
+    word_left = ''.join(map(lambda c: c if c in user['correct'] else '_', word))
+    return f"GS,{word_left},{user['lives']}"
 
-with open('common_words.txt') as words:
-    x = words.read().splitlines()
+
 class ClientThread(threading.Thread):
 
     def __init__(self, clientAddress, clientsocket):
