@@ -1,6 +1,35 @@
 import socket
 import threading
 from random import sample
+from random import randint
+
+# Homemade Protocols:
+# NC <- new connection
+# SC <- successful connection
+# EC <- error connection
+# GS <- game status
+# GO <- game over (user entered 'exit')
+# GW <- win game
+# GL <- lose game
+# AG <- already guessed
+# CG <- correctly guessed
+# IG <- incorrectly guessed
+# EG <- error guessed
+
+with open('common_words.txt') as word_file:
+    words = word_file.read().splitlines()
+    words = sample(words, 100)
+
+word = words[0].lower()
+# NOTE: we do this for comparison later on. There is 100% a better way to do this but this works for now
+word_set = set(word)
+
+users = dict()
+
+
+def new_user():
+    return {'correct': set(), 'wrong': set(), 'lives': 10}
+
 
 global x
 
