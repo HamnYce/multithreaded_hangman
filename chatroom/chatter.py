@@ -5,7 +5,7 @@
 
 import socket
 import threading
-
+PROMPT = "next msg: "
 still_talking = True
 
 
