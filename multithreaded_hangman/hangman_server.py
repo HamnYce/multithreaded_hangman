@@ -3,37 +3,33 @@ import threading
 from random import sample
 from random import randint
 
-# Homemade Protocols:
+# Homemade Protocols / Signals:
 # NC <- new connection
-# SC <- successful connection
+# SC <- successful connection, comes with name and word length
 # EC <- error connection
-# GS <- game status
 # GO <- game over (user entered 'exit')
 # GW <- win game
 # GL <- lose game
-# AG <- already guessed
+# GE <- end game
 # CG <- correctly guessed
 # IG <- incorrectly guessed
-# EG <- error guessed
 
-with open('common_words.txt') as word_file:
+with open("../common_words.txt") as word_file:
     words = word_file.read().splitlines()
     words = sample(words, 100)
 
 word = words[0].lower()
 # NOTE: we do this for comparison later on. There is 100% a better way to do this but this works for now
 word_set = set(word)
-
 users = dict()
 
 
 def new_user():
-    return {'correct': set(), 'wrong': set(), 'lives': 10}
+    return {"correct": set(), "wrong": set(), "lives": 10}
 
 
-def game_status(user):
-    word_left = ''.join(map(lambda c: c if c in user['correct'] else '_', word))
-    return f"GS,{word_left},{user['lives']}"
+def word_indexes(letter):
+    return map(lambda t: str(t[0]), filter(lambda t: t[1] == letter, enumerate(word)))
 
 
 class ClientThread(threading.Thread):
@@ -64,19 +60,12 @@ class ClientThread(threading.Thread):
         del users[self.name]
         print(f"Client,{self.name}, at {self.client_address} disconnected...")
 
-    def msg_client(self, msg):
-        self.client_socket.sendall(bytes(msg, 'utf-8'))
-
-    def recv_client(self):
-        res = self.client_socket.recv(1024)
-        return res.decode()
-
     def introduction(self):
         intro = self.recv_client()
-        print(self.client_address + intro)
+        print(self.client_address)
 
         if intro == "NC":
-            self.msg_client(f"SC,{self.name}")
+            self.msg_client(f"SC,{self.name},{len(word)}")
 
             return True
         else:
@@ -86,36 +75,35 @@ class ClientThread(threading.Thread):
 
     def game_loop(self):
         while True:
-            self.msg_client(game_status(users[self.name]))
-
             letter = self.recv_client().lower()
+            print(f"letter {letter}")
 
-            if letter == 'exit':
-                self.msg_client("GO")
+            if letter == "EG":
+                self.msg_client(f"GO,{word}")
                 return
-
-            if len(letter) != 1 or ord(letter) < ord('a') or ord(letter) > ord('z'):
-                self.msg_client("EG")
-
-            if letter in users[self.name]['correct'] or letter in users[self.name]['wrong']:
-                self.msg_client("AG")
             elif letter in word:
-                users[self.name]['correct'].add(letter)
+                users[self.name]["correct"].add(letter)
 
-                if users[self.name]['correct'] == word_set:
+                if users[self.name]["correct"] == word_set:
                     self.msg_client("GW")
                     return
-
-                self.msg_client("CG")
+                self.msg_client("CG," + ','.join(word_indexes(letter)))
             else:
-                if users[self.name]['lives'] == 1:
-                    self.msg_client(f"GW,{word}")
+                users[self.name]["wrong"].add(letter)
+                users[self.name]["lives"] -= 1
+
+                if not users[self.name]["lives"]:
+                    self.msg_client(f"GL,{word}")
                     return
 
                 self.msg_client("IG")
 
-                users[self.name]['wrong'].add(letter)
-                users[self.name]['lives'] -= 1
+    def msg_client(self, msg):
+        self.client_socket.sendall(bytes(msg, "utf-8"))
+
+    def recv_client(self):
+        res = self.client_socket.recv(1024)
+        return res.decode()
 
 
 HOST = "0.0.0.0"
