@@ -14,7 +14,7 @@ from random import randint
 # CG <- correctly guessed
 # IG <- incorrectly guessed
 
-with open("../common_words.txt") as word_file:
+with open("multithreaded_hangman/common_words.txt") as word_file:
     words = word_file.read().splitlines()
     words = sample(words, 100)
 
@@ -23,6 +23,9 @@ word = words[0].lower()
 word_set = set(word)
 users = dict()
 
+
+# FIXME: might need to have the ip address be an input because
+#  it will be different everytime we connect to stuff
 
 def new_user():
     return {"correct": set(), "wrong": set(), "lives": 10}
@@ -106,8 +109,7 @@ class ClientThread(threading.Thread):
         return res.decode()
 
 
-HOST = "0.0.0.0"
-PORT = 9999
+HOST, PORT = "0.0.0.0", 9999
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
