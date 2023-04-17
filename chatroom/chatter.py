@@ -16,10 +16,13 @@ class SpeakerThread(threading.Thread):
 
     def run(self):
         while True:
-            msg = input("next msg: ")
-            print("\b" * len("next msg: "), end="")
+            msg = input(PROMPT)
+
+            print("\b" * len(PROMPT) + " " * len(PROMPT) + "\b" * len(PROMPT), end="")
+
             if msg == "sign out":
                 break
+
             self.server_socket.sendall(bytes(msg, "utf-8"))
 
         global still_talking
