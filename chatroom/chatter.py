@@ -37,9 +37,7 @@ class ListenerThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        while True:
-            if not still_talking:
-                break
+        while still_talking:
             res = self.server_socket.recv(1024).decode()
             print(res)
 
