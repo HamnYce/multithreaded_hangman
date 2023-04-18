@@ -2,6 +2,7 @@ import socket
 import threading
 
 # TODO: we can add usernames later, structure: '<username>:<msg>'
+#   can use Faker for the random words and stuff (BEWARE DEPENDENCY HELL!)
 chat_msgs = []
 
 
@@ -13,16 +14,19 @@ class ClientListenerThread(threading.Thread):
         self.client_address = client_address
 
     def run(self):
+        chat_msgs.append(f"{self.client_address} has signed in")
+
         while True:
             res = self.client_socket.recv(1024).decode()
             if res == 'sign out now' or len(res) == 0:
                 break
 
-            print(f"{self.client_address} says {res}")
+            msg = f"{self.client_address}: {res}"
 
-            chat_msgs.append(res)
+            chat_msgs.append(msg)
 
         self.client_socket.close()
+        chat_msgs.append(f"{self.client_address} has signed out")
         print(f"Disconnected from client: {self.client_address}")
 
 
@@ -32,11 +36,11 @@ class ClientMessagerThread(threading.Thread):
 
         self.client_socket = client_socket
         self.client_address = client_address
-        self.msg_i = 0
+        self.msg_i = len(chat_msgs)
 
     def run(self):
         while True:
-            if self.msg_i < len(chat_msgs):
+            if self.more_chats_available():
                 self.client_socket.sendall(bytes(chat_msgs[self.msg_i], 'utf-8'))
                 self.msg_i += 1
 
