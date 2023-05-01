@@ -6,7 +6,7 @@ from random import sample
 
 with open("../multithreaded_hangman/common_words.txt") as f:
     words = sample(f.readlines(), 100)
-word = words[0]
+word = words[0].lower().strip()
 print(f"word: {word}")
 
 
@@ -54,7 +54,11 @@ class MainApplication(tk.Frame):
         match msg:
             case ["GS", guess]:
                 self.update_chat_box(guess)
-                # put hangman logic here for updating underscores
+
+                if guess == word:
+                    self.game_area.update_word(' '.join(word))
+                    self.update_chat_box("You got the word!!")
+
             case ["PS", player_name, player_points]:
                 self.player_status.add_adjust_player(player_name, player_points)
         self.chat_box.user_input.entry_var.set("")
@@ -104,16 +108,25 @@ class GameArea(tk.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        # top part 3/4 space, contains art
+        self.timer = Timer(self)
+        self.timer.grid(row=0, column=0, sticky=tk.W + tk.E + tk.S)
 
-        # Bottom part 1/4 space, contains underscores / word itself (encapsulate this)
-        # word underscores
-        self.word_var = tk.StringVar(value="Hello world")
+        # the word
+        self.word_var = tk.StringVar(value=' '.join("_" * len(word)))
         self.word_label = tk.Label(self, textvariable=self.word_var)
-        self.word_label.grid(row=0, column=0, sticky=tk.W + tk.E + tk.S)
+        self.word_label.grid(row=1, column=0, sticky=tk.W + tk.E + tk.S)
 
     def update_word(self, new_word):
         self.word_var.set(new_word)
+
+
+class Timer(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.parent = parent
+
+        self.timer_value = tk.IntVar(value=0)
+        self.timer = tk.Label(self, textvariable=self.timer_value)
 
 
 class ChatBox(tk.Frame):
@@ -153,8 +166,8 @@ class UserInput(tk.Frame):
 
 
 root = tk.Tk()
-second_monitor = "-1600+200"
-# second_monitor = ""
+# second_monitor = "-1600+200"
+second_monitor = ""
 root.geometry(f"800x400{second_monitor}")
 root.rowconfigure(0, weight=1)
 root.columnconfigure(0, weight=1)

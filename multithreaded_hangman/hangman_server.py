@@ -4,15 +4,15 @@ from random import sample
 from random import randint
 
 # Homemade Protocols / Signals:
-# NC <- new connection
-# SC <- successful connection, comes with name and word length
-# EC <- error connection
-# GO <- game over (user entered 'exit')
-# GW <- win game
-# GL <- lose game
-# GE <- end game
-# CG <- correctly guessed
-# IG <- incorrectly guessed
+# # NC <- new connection
+# # SC <- successful connection, comes with name and word length
+# # EC <- error connection
+# # GO <- game over (user entered 'exit')
+# # GW <- win game
+# # GL <- lose game
+# # GE <- end game
+# # CG <- correctly guessed
+# # IG <- incorrectly guessed
 
 with open("multithreaded_hangman/common_words.txt") as word_file:
     words = word_file.read().splitlines()
